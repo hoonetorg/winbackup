@@ -1,0 +1,4 @@
+partclone
+ntfsclone 
+fsarchiver
+sgdisk
