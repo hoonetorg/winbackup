@@ -10,7 +10,7 @@ Extract `sdelete64.exe` with
 
 On Windows Host create a folder `<windrive>:\Program Files\winbackup`
 
-Copy `prepare*` and `sdelete64.exe` files to Windows Host `<windrive>:\Program Files\winbackup`
+Copy `winbackup*.ps1` and `sdelete64.exe` files to Windows Host `<windrive>:\Program Files\winbackup`
 
 Open powershell as Administrator!!!
 
@@ -18,7 +18,7 @@ In Powershell do:
 
 `cd "<windrive>:\Program Files\winbackup"`
 
-`powershell -ExecutionPolicy Bypass -File ".\prepare_windows_install_for_backup.b4_reboot.ps1"`
+`powershell -ExecutionPolicy Bypass -File ".\winbackup_prepare.b4_reboot.ps1"`
 
 Reboot Windows to apply changes that need a reboot
 
@@ -26,8 +26,25 @@ Open Powershell in Windows as Administrator!!! again and:
 
 `cd "<windrive>:\Program Files\winbackup"`
 
-`powershell -ExecutionPolicy Bypass -File ".\prepare_windows_install_for_backup.after_reboot.ps1"`
+`powershell -ExecutionPolicy Bypass -File ".\winbackup_prepare.after_reboot.ps1"`
 
 Poweroff Windows
 
 ... continue creating the backup on Linux
+
+# Steps to revert backup preparations after restore
+
+we assume that scripts are already copied from preparation 
+
+Open powershell as Administrator!!!
+
+In Powershell do:
+
+`cd "<windrive>:\Program Files\winbackup"`
+
+`powershell -ExecutionPolicy Bypass -File ".\winbackup_revert.ps1"`
+
+reboot
+
+... restore finished
+

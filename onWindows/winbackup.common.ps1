@@ -1,7 +1,6 @@
-# PowerShell Scripts to prepare Windows drive for backup (overall 3 scripts: common, b4_reboot, after_reboot)
+# PowerShell Scripts to prepare Windows drive for backup and revert preparations after restore
+# (overall 4 scripts: common, prepare.b4_reboot, prepare.after_reboot, revert)
 # this is script common
-# Required sdelete64.exe from https://download.sysinternals.com/files/SDelete.zip
-# Scripts and sdelete64.exe must be copied to <windowsDrive>\Program Files\winbackup\
 
 function recursively-Remove-Files-If-Possible {
     param (
