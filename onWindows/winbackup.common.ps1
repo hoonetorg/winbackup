@@ -12,12 +12,12 @@ function recursively-Remove-Files-If-Possible {
         return
     }
 
-    Write-Host "[INFO] Deleting files from: ${Path}" -ForegroundColor Cyan
+    Write-Host "[INFO] Deleting files from: ${Path}" -ForegroundColor Green
 
     Get-ChildItem -Path ${Path} -File -Recurse | ForEach-Object {
         Try {
             ${filePath} = $_.FullName
-            Write-Host "[INFO] Deleting ${filePath}" -ForegroundColor Yellow
+            Write-Host "[INFO] Deleting ${filePath}" -ForegroundColor Green
             Remove-Item -Path $_.FullName -Force -ErrorAction Stop
         } Catch {
             Write-Host "[WARNING] Could not delete: ${filePath} (File in use)" -ForegroundColor Yellow
@@ -32,8 +32,8 @@ ${windowsDrive} = ((Get-PSDrive -PSProvider FileSystem | Where-Object { Test-Pat
 ${windowsDriveLetter} = ${windowsDrive}.TrimEnd(":")
 
 
-Write-Host "[INFO] windowsDrive: ${windowsDrive}" -ForegroundColor Yellow
-Write-Host "[INFO] Windows Drive Letter: ${windowsDriveLetter}" -ForegroundColor Yellow
+Write-Host "[INFO] windowsDrive: ${windowsDrive}" -ForegroundColor Green
+Write-Host "[INFO] Windows Drive Letter: ${windowsDriveLetter}" -ForegroundColor Green
 
 if (-not ${windowsDrive}) {
     Write-Host "[ERROR] Could not determine the Windows installation drive." -ForegroundColor Red

@@ -11,7 +11,7 @@ Write-Host "[INFO] Step 5: Running Disk Cleanup and Storage Sense" -ForegroundCo
 Write-Host "[INFO] Running Disk Cleanup" -ForegroundColor Yellow
 cleanmgr /sagerun:1
 
-Write-Host "[INFO] Running Storage Sense to free up space" -ForegroundColor Yellow
+Write-Host "[INFO] Running Storage Sense to free up space" -ForegroundColor Green
 Start-Process -NoNewWindow -Wait -FilePath "cmd.exe" -ArgumentList "/c cleanmgr /verylowdisk"
 
 Write-Host "[INFO] Step 6: Compacting Windows system files..." -ForegroundColor Green
@@ -47,15 +47,15 @@ ${maxShrinkSize} = ${supportedSize}.SizeMin
 ${bufferSize} = 5 * 1024 * 1024 * 1024  # 5GB buffer
 ${shrinkSize} = ${maxShrinkSize} + ${bufferSize}
 
-Write-Host "[INFO] partition ${partition}" -ForegroundColor Yellow
-Write-Host "[INFO] supportedSize ${supportedSize}" -ForegroundColor Yellow
-Write-Host "[INFO] maxShrinkSize ${maxShrinkSize}" -ForegroundColor Yellow
-Write-Host "[INFO] bufferSize ${bufferSize}" -ForegroundColor Yellow
-Write-Host "[INFO] shrinkSize ${shrinkSize}" -ForegroundColor Yellow
+Write-Host "[INFO] partition ${partition}" -ForegroundColor Green
+Write-Host "[INFO] supportedSize ${supportedSize}" -ForegroundColor Green
+Write-Host "[INFO] maxShrinkSize ${maxShrinkSize}" -ForegroundColor Green
+Write-Host "[INFO] bufferSize ${bufferSize}" -ForegroundColor Green
+Write-Host "[INFO] shrinkSize ${shrinkSize}" -ForegroundColor Green
 
 
 if (${maxShrinkSize} -gt 0) {
-    Write-Host "[INFO] Shrinking partition to $(${shrinkSize} / 1MB) MB..." -ForegroundColor Yellow
+    Write-Host "[INFO] Shrinking partition to $(${shrinkSize} / 1MB) MB..." -ForegroundColor Green
     Resize-Partition -DriveLetter ${windowsDriveLetter} -Size ${shrinkSize}
     Write-Host "[INFO] Partition shrink complete." -ForegroundColor Green
 } else {
@@ -63,13 +63,13 @@ if (${maxShrinkSize} -gt 0) {
 }
 
 Write-Host "[INFO] Step 14: Zero free space (use sdelete64 from Sysinternals)" -ForegroundColor Green
-Write-Host "[INFO] Zero free space of Windows volume ${windowsDrive}..." -ForegroundColor Yellow
+Write-Host "[INFO] Zero free space of Windows volume ${windowsDrive}..." -ForegroundColor Green
 Start-Process -NoNewWindow -Wait -FilePath "${windowsDrive}\Program Files\winbackup\sdelete64.exe" -ArgumentList "-accepteula -q -z ${windowsDrive}"
 Write-Host "[INFO] Wrinting zeros completed for ${windowsDrive}." -ForegroundColor Green
 
 Write-Host "[INFO]  Step 15: Final TRIM" -ForegroundColor Green
-Write-Host "[INFO] Performing final TRIM operation..." -ForegroundColor Yellow
+Write-Host "[INFO] Performing final TRIM operation..." -ForegroundColor Green
 optimize-volume -DriveLetter ${windowsDrive}[0] -ReTrim
 Write-Host "[INFO] Final TRIM completed successfully." -ForegroundColor Green
 
-Write-Host "Windows preparation complete! Poweroff and proceed with Linux backup."
+Write-Host "Windows preparation complete! Poweroff and proceed with Linux backup ..."
