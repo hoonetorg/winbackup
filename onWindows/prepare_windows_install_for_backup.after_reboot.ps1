@@ -21,18 +21,18 @@ compact.exe /CompactOS:always
 
 Write-Host "[INFO] Step 7: Removing user and system Temp files" -ForegroundColor Green
 recursively-Remove-Files-If-Possible -Path "$env:TEMP\*"
-recursively-Remove-Files-If-Possible -Path "${windowsDrive}:\Windows\Temp\*"
+recursively-Remove-Files-If-Possible -Path "${windowsDrive}\Windows\Temp\*"
 
 Write-Host "[INFO] Step 8: Deleting Windows Update cache..." -ForegroundColor Green
 Stop-Service wuauserv -Force
-recursively-Remove-Files-If-Possible -Path "${windowsDrive}:\Windows\SoftwareDistribution\Download\*"
+recursively-Remove-Files-If-Possible -Path "${windowsDrive}\Windows\SoftwareDistribution\Download\*"
 # not required, we poweroff and backup
 #Start-Service wuauserv
 
 Write-Host "[INFO] Step 9: Deleting Windows logs..." -ForegroundColor Green
-recursively-Remove-Files-If-Possible -Path "${windowsDrive}:\Windows\Logs\*"
+recursively-Remove-Files-If-Possible -Path "${windowsDrive}\Windows\Logs\*"
 
-Write-Host "[INFO] Step 10: Clear Windows Delivery Optimization Cache C:\ProgramData\Microsoft\Windows\DeliveryOptimization" -ForegroundColor Green
+Write-Host "[INFO] Step 10: Clear Windows Delivery Optimization Cache ${windowsDrive}\ProgramData\Microsoft\Windows\DeliveryOptimization" -ForegroundColor Green
 recursively-Remove-Files-If-Possible -Path "${windowsDrive}\ProgramData\Microsoft\Windows\DeliveryOptimization\*"
 
 Write-Host "[INFO] Step 11: Defragmenting the volume ${windowsDrive}" -ForegroundColor Green
