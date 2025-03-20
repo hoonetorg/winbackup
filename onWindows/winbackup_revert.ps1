@@ -30,41 +30,34 @@ Write-Host "[INFO] Pagefile has been set to Windows-managed." -ForegroundColor G
 Write-Host "[WARNING] Reboot required..." -ForegroundColor Yellow
 
 
-Write-Host "[INFO] Step 3: Stop and disable Prefetch and Superfetch (Sysmain) and delete Prefetch and Superfetch Files" -ForegroundColor Green
-Write-Host "[INFO] Disabling Prefetch" -ForegroundColor Green
-Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management\PrefetchParameters" -Name "EnablePrefetcher" -Value 0
+Write-Host "[INFO] Step 3: Enable Prefetch and Superfetch (Sysmain)" -ForegroundColor Green
+Write-Host "[INFO] Enabling Prefetch" -ForegroundColor Green
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management\PrefetchParameters" -Name "EnablePrefetcher" -Value 3
 
-Write-Host "[INFO] Disabling Superfetch(SysMain)" -ForegroundColor Green
-Stop-Service -Name "SysMain" -Force
-Set-Service -Name "SysMain" -StartupType Disabled
+Write-Host "[INFO] Enabling Superfetch(SysMain)" -ForegroundColor Green
+Set-Service -Name "SysMain" -StartupType Automatic
+Start-Service -Name "SysMain"
+Write-Host "[INFO] Prefetch and Superfetch enabled." -ForegroundColor Green
 
-Write-Host "[INFO] Prefetch and Superfetch disabled. Cache cleared." -ForegroundColor Green
+Write-Host "[INFO] Step 4: Expand Partition to Maximum Size" -ForegroundColor Green
+$partition = Get-Partition -DriveLetter ${windowsDriveLetter}
+$supportedSize = $partition | Get-PartitionSupportedSize
+$maxSize = $supportedSize.SizeMax
 
-Write-Host "[INFO] Step 4: Expand Partition to partition size" -ForegroundColor Green
-${partition} = Get-Partition -DriveLetter ${windowsDriveLetter}
-${supportedSize} = ${partition} | Get-PartitionSupportedSize
-${maxShrinkSize} = ${supportedSize}.SizeMin
-${bufferSize} = 5 * 1024 * 1024 * 1024  # 5GB buffer
-${shrinkSize} = ${maxShrinkSize} + ${bufferSize}
+Write-Host "[INFO] Current partition size: $($partition.Size / 1MB) MB" -ForegroundColor Green
+Write-Host "[INFO] Maximum supported size: $($maxSize / 1MB) MB" -ForegroundColor Green
 
-Write-Host "[INFO] partition ${partition}" -ForegroundColor Green
-Write-Host "[INFO] supportedSize ${supportedSize}" -ForegroundColor Green
-Write-Host "[INFO] maxShrinkSize ${maxShrinkSize}" -ForegroundColor Green
-Write-Host "[INFO] bufferSize ${bufferSize}" -ForegroundColor Green
-Write-Host "[INFO] shrinkSize ${shrinkSize}" -ForegroundColor Green
-
-
-if (${maxShrinkSize} -gt 0) {
-    Write-Host "[INFO] Shrinking partition to $(${shrinkSize} / 1MB) MB..." -ForegroundColor Green
-    Resize-Partition -DriveLetter ${windowsDriveLetter} -Size ${shrinkSize}
-    Write-Host "[INFO] Partition shrink complete." -ForegroundColor Green
+if ($partition.Size -lt $maxSize) {
+    Resize-Partition -DriveLetter ${windowsDriveLetter} -Size ${maxSize}
+    Write-Host "[INFO] Partition expanded to full available size." -ForegroundColor Green
 } else {
-    Write-Host "[WARNING] Not enough shrinkable space. Skipping shrink step." -ForegroundColor Green
+    Write-Host "[WARNING] Partition is already at max size. No expansion needed." -ForegroundColor Yellow
 }
 
-Write-Host "[INFO]  Step 15: Final TRIM" -ForegroundColor Green
+Write-Host "[INFO]  Step 5: Final TRIM" -ForegroundColor Green
 Write-Host "[INFO] Performing final TRIM operation..." -ForegroundColor Green
 optimize-volume -DriveLetter ${windowsDrive}[0] -ReTrim
 Write-Host "[INFO] Final TRIM completed successfully." -ForegroundColor Green
 
 Write-Host "Reversal of Windows preparation steps complete! Reboot and use your System as usual ..."
+
