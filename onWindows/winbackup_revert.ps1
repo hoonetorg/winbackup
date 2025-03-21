@@ -11,8 +11,24 @@ ${pStat} =  $volume.ProtectionStatus
 Write-Host "[INFO] BitLocker status on ${windowsDrive} (volume ${volume}):  ${pStat}" -ForegroundColor Green
 
 if (${volume} -and ${pStat} -ne 'On') {
-    Write-Host "[INFO] Enabling BitLocker on ${windowsDrive} to ensure full deactivation." -ForegroundColor Green
-    manage-bde -on ${windowsDrive}
+    Write-Host "[INFO] Enabling BitLocker on ${windowsDrive}" -ForegroundColor Green
+    manage-bde -protectors -add ${windowsDrive} -TPM
+    manage-bde -protectors -add ${windowsDrive} -RecoveryPassword
+
+    ${drive} = Get-Volume | Where-Object { $_.FileSystemLabel -eq ${keysDriveLabel} -and $_.DriveType -eq 'Removable' }
+    Write-Host "drive ${drive}"
+    if (${drive}) {
+        ${driveRoot} = (${drive}.DriveLetter + ":\")
+        ${filePath} = Join-Path -Path ${driveRoot} -ChildPath "bitlocker_protectors.txt"
+        manage-bde -protectors -get c: | Out-File -FilePath ${filePath} -Encoding utf8
+        Write-Host "[INFO] Bitlocker protectors saved successfully to ${filePath}" -ForegroundColor Green
+    }
+    else {
+        Write-Host "[ERROR] No removable drive found with label '${keysDriveLabel}'" -ForegroundColor Red
+        exit 1
+    }
+
+    manage-bde -on ${windowsDrive} -UsedSpaceOnly -SkipHardwareTest -Synchronous
     Start-Sleep -Seconds 20
 } 
 Write-Host "[INFO] BitLocker fully enabled on Windows volume." -ForegroundColor Green
@@ -40,14 +56,14 @@ Start-Service -Name "SysMain"
 Write-Host "[INFO] Prefetch and Superfetch enabled." -ForegroundColor Green
 
 Write-Host "[INFO] Step 4: Expand Partition to Maximum Size" -ForegroundColor Green
-$partition = Get-Partition -DriveLetter ${windowsDriveLetter}
-$supportedSize = $partition | Get-PartitionSupportedSize
-$maxSize = $supportedSize.SizeMax
+${partition} = Get-Partition -DriveLetter ${windowsDriveLetter}
+${supportedSize} = ${partition} | Get-PartitionSupportedSize
+${maxSize} = ${supportedSize}.SizeMax
 
-Write-Host "[INFO] Current partition size: $($partition.Size / 1MB) MB" -ForegroundColor Green
-Write-Host "[INFO] Maximum supported size: $($maxSize / 1MB) MB" -ForegroundColor Green
+Write-Host "[INFO] Current partition size: $(${partition}.Size / 1MB) MB" -ForegroundColor Green
+Write-Host "[INFO] Maximum supported size: $(${maxSize} / 1MB) MB" -ForegroundColor Green
 
-if ($partition.Size -lt $maxSize) {
+if (${partition}.Size -lt ${maxSize}) {
     Resize-Partition -DriveLetter ${windowsDriveLetter} -Size ${maxSize}
     Write-Host "[INFO] Partition expanded to full available size." -ForegroundColor Green
 } else {

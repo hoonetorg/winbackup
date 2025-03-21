@@ -31,6 +31,7 @@ ${windowsDrive} = ((Get-PSDrive -PSProvider FileSystem | Where-Object { Test-Pat
 
 ${windowsDriveLetter} = ${windowsDrive}.TrimEnd(":")
 
+$keysDriveLabel = "KEYS"
 
 Write-Host "[INFO] windowsDrive: ${windowsDrive}" -ForegroundColor Green
 Write-Host "[INFO] Windows Drive Letter: ${windowsDriveLetter}" -ForegroundColor Green
