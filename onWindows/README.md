@@ -1,5 +1,6 @@
 # Steps to prepare Windows installation for backup
-Download sdelete with `get_sdelete.sh` on Linux
+## Running Install-Linux on machine with Windows installed
+Download sdelete with `get_sdelete.sh`
 
 Ensure you have the correct version of sdelete with
 `sha512sum -c SHA512SUMS_sdelete`
@@ -8,10 +9,13 @@ Extract `sdelete64.exe` with
 
 `unzip SDelete.zip sdelete64.exe`
 
-On Windows Host create a folder `<windrive>:\Program Files\winbackup`
+Run `windeploy.sh` in root of git repo in order to 
 
-Copy `winbackup*.ps1` and `sdelete64.exe` files to Windows Host `<windrive>:\Program Files\winbackup`
+- Create a folder `<windrive>:\Program Files\winbackup` on Windows disk
+- Copy `winbackup*.ps1` and `sdelete64.exe` files to Windows disk `<windrive>:\Program Files\winbackup`
 
+## on Windows host
+### Steps for preparation of Windows backup
 Open powershell as Administrator!!!
 
 In Powershell do:
@@ -32,7 +36,9 @@ Poweroff Windows
 
 ... continue creating the backup on Linux
 
-# Steps to revert backup preparations after restore
+# Steps after restore of Windows
+## on Windows host
+### Steps to revert backup preparations after restore
 
 we assume that scripts are already copied from preparation 
 
