@@ -63,7 +63,7 @@ function Enable-Bitlocker-If-Needed {
     param (
         [Parameter(Mandatory)]
         [ValidatePattern("^[A-Z]:$")]
-        [string]{Drive}
+        [string]${Drive}
     )
 
     ${volume} = Get-BitLockerVolume -MountPoint ${Drive}
@@ -75,11 +75,11 @@ function Enable-Bitlocker-If-Needed {
         manage-bde -protectors -add ${Drive} -TPM
         manage-bde -protectors -add ${Drive} -RecoveryPassword
 
-        ${drive} = Get-Volume | Where-Object { $_.FileSystemLabel -eq ${keysDriveLabel} -and $_.DriveType -eq 'Removable' }
-        Write-Host "[INFO] USB drive with LABEL ${keysDriveLabel} to save Bitlocker protectors: ${drive}" -ForegroundColor Green
-        if (${drive}) {
-            ${driveRoot} = (${drive}.DriveLetter + ":\")
-            ${filePath} = Join-Path -Path ${driveRoot} -ChildPath "bitlocker_protectors.txt"
+        ${keysDrive} = Get-Volume | Where-Object { $_.FileSystemLabel -eq ${keysDriveLabel} -and $_.DriveType -eq 'Removable' }
+        Write-Host "[INFO] USB drive with LABEL ${keysDriveLabel} to save Bitlocker protectors: ${keysDrive}" -ForegroundColor Green
+        if (${keysDrive}) {
+            ${keysDriveRoot} = (${keysDrive}.DriveLetter + ":\")
+            ${filePath} = Join-Path -Path ${keysDriveRoot} -ChildPath "bitlocker_protectors.txt"
             manage-bde -protectors -get c: | Out-File -FilePath ${filePath} -Encoding utf8
             Write-Host "[INFO] Bitlocker protectors saved successfully to ${filePath}" -ForegroundColor Green
         }
@@ -98,17 +98,17 @@ function Disable-BitLockerAndWait {
     param (
         [Parameter(Mandatory)]
         [ValidatePattern("^[A-Z]:$")]
-        [string]{Drive}
+        [string]${Drive}
     )
 
-    Write-Host "[INFO] Starting BitLocker decryption on {Drive}" -ForegroundColor Green
+    Write-Host "[INFO] Starting BitLocker decryption on ${Drive}" -ForegroundColor Green
 
     # Initiate decryption
-    manage-bde -off {Drive}
+    manage-bde -off ${Drive}
 
     # Polling loop to check decryption status
     while ($true) {
-        ${statusOutput} = manage-bde -status {Drive}
+        ${statusOutput} = manage-bde -status ${Drive}
 
         ${percentageLine} = ${statusOutput} | Where-Object { $_ -match 'Percentage Encrypted' }
 
