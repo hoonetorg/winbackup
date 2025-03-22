@@ -5,57 +5,32 @@
 . ".\winbackup.common.ps1"
 
 Write-Host "[INFO] Step 1 Check BitLocker status and enable if needed" -ForegroundColor Green
+Enable-Bitlocker-If-Needed -Drive "${windowsDrive}"
 
-${volume} = Get-BitLockerVolume -MountPoint ${windowsDrive}
-${pStat} =  $volume.ProtectionStatus
-Write-Host "[INFO] BitLocker status on ${windowsDrive} (volume ${volume}):  ${pStat}" -ForegroundColor Green
-
-if (${volume} -and ${pStat} -ne 'On') {
-    Write-Host "[INFO] Enabling BitLocker on ${windowsDrive}" -ForegroundColor Green
-    manage-bde -protectors -add ${windowsDrive} -TPM
-    manage-bde -protectors -add ${windowsDrive} -RecoveryPassword
-
-    ${drive} = Get-Volume | Where-Object { $_.FileSystemLabel -eq ${keysDriveLabel} -and $_.DriveType -eq 'Removable' }
-    Write-Host "drive ${drive}"
-    if (${drive}) {
-        ${driveRoot} = (${drive}.DriveLetter + ":\")
-        ${filePath} = Join-Path -Path ${driveRoot} -ChildPath "bitlocker_protectors.txt"
-        manage-bde -protectors -get c: | Out-File -FilePath ${filePath} -Encoding utf8
-        Write-Host "[INFO] Bitlocker protectors saved successfully to ${filePath}" -ForegroundColor Green
-    }
-    else {
-        Write-Host "[ERROR] No removable drive found with label '${keysDriveLabel}'" -ForegroundColor Red
-        exit 1
-    }
-
-    manage-bde -on ${windowsDrive} -UsedSpaceOnly -SkipHardwareTest -Synchronous
-    Start-Sleep -Seconds 20
-} 
-Write-Host "[INFO] BitLocker fully enabled on Windows volume." -ForegroundColor Green
-
-Write-Host "[INFO] Step 2: Enable Hibernation and Pagefile " -ForegroundColor Green
-Write-Host "[INFO] Enable Hibernation" -ForegroundColor Green
+Write-Host "[INFO] Step 2: Disable fast startup/enable hibernation and enable pagefile" -ForegroundColor Green
+Write-Host "[INFO] Disable fast startup/enable hibernation" -ForegroundColor Green
 powercfg -h on
+Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Power' -Name 'HiberbootEnabled' -Value 0
 
-Write-Host "[INFO] Enabling system-managed paging file..." -ForegroundColor Green
+Write-Host "[INFO] Enabling system-managed paging file" -ForegroundColor Green
 Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" `
                  -Name "PagingFiles" -Value "?:\pagefile.sys" -Type MultiString
 Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" `
                  -Name "AutomaticManagedPagefile" -Value 1 -Type DWord
-Write-Host "[INFO] Pagefile has been set to Windows-managed." -ForegroundColor Green
+Write-Host "[INFO] Pagefile has been set to Windows-managed" -ForegroundColor Green
 Write-Host "[WARNING] Reboot required..." -ForegroundColor Yellow
 
 
-Write-Host "[INFO] Step 3: Enable Prefetch and Superfetch (Sysmain)" -ForegroundColor Green
-Write-Host "[INFO] Enabling Prefetch" -ForegroundColor Green
+Write-Host "[INFO] Step 3: Enable prefetch and superfetch (SysMain)" -ForegroundColor Green
+Write-Host "[INFO] Enabling prefetch" -ForegroundColor Green
 Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management\PrefetchParameters" -Name "EnablePrefetcher" -Value 3
 
-Write-Host "[INFO] Enabling Superfetch(SysMain)" -ForegroundColor Green
+Write-Host "[INFO] Enabling superfetch(SysMain)" -ForegroundColor Green
 Set-Service -Name "SysMain" -StartupType Automatic
 Start-Service -Name "SysMain"
-Write-Host "[INFO] Prefetch and Superfetch enabled." -ForegroundColor Green
+Write-Host "[INFO] prefetch and superfetch enabled" -ForegroundColor Green
 
-Write-Host "[INFO] Step 4: Expand Partition to Maximum Size" -ForegroundColor Green
+Write-Host "[INFO] Step 4: Expand partition to max size" -ForegroundColor Green
 ${partition} = Get-Partition -DriveLetter ${windowsDriveLetter}
 ${supportedSize} = ${partition} | Get-PartitionSupportedSize
 ${maxSize} = ${supportedSize}.SizeMax
@@ -65,15 +40,14 @@ Write-Host "[INFO] Maximum supported size: $(${maxSize} / 1MB) MB" -ForegroundCo
 
 if (${partition}.Size -lt ${maxSize}) {
     Resize-Partition -DriveLetter ${windowsDriveLetter} -Size ${maxSize}
-    Write-Host "[INFO] Partition expanded to full available size." -ForegroundColor Green
+    Write-Host "[INFO] Partition expanded to full available size" -ForegroundColor Green
 } else {
-    Write-Host "[WARNING] Partition is already at max size. No expansion needed." -ForegroundColor Yellow
+    Write-Host "[WARNING] Partition is already at max size - no expansion needed" -ForegroundColor Yellow
 }
 
 Write-Host "[INFO]  Step 5: Final TRIM" -ForegroundColor Green
-Write-Host "[INFO] Performing final TRIM operation..." -ForegroundColor Green
-optimize-volume -DriveLetter ${windowsDrive}[0] -ReTrim
-Write-Host "[INFO] Final TRIM completed successfully." -ForegroundColor Green
+Write-Host "[INFO] Performing final TRIM operation" -ForegroundColor Green
+optimize-volume -DriveLetter ${windowsDriveLetter} -ReTrim
+Write-Host "[INFO] Final TRIM completed successfully" -ForegroundColor Green
 
 Write-Host "Reversal of Windows preparation steps complete! Reboot and use your System as usual ..."
-

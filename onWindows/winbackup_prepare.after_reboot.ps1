@@ -4,43 +4,43 @@
 
 . ".\winbackup.common.ps1"
 
-Write-Host "[INFO] Step 4: Deleting all system restore points..." -ForegroundColor Green
+Write-Host "[INFO] Step 5: Deleting all system restore points" -ForegroundColor Green
 vssadmin delete shadows /all /quiet
 
-Write-Host "[INFO] Step 5: Running Disk Cleanup and Storage Sense" -ForegroundColor Green
-Write-Host "[INFO] Running Disk Cleanup" -ForegroundColor Yellow
+Write-Host "[INFO] Step 6: Running disk cleanup and Storage Sense" -ForegroundColor Green
+Write-Host "[INFO] Running disk cleanup" -ForegroundColor Green
 cleanmgr /sagerun:1
 
-Write-Host "[INFO] Running Storage Sense to free up space" -ForegroundColor Green
+Write-Host "[INFO] Running Storage Sense" -ForegroundColor Green
 Start-Process -NoNewWindow -Wait -FilePath "cmd.exe" -ArgumentList "/c cleanmgr /verylowdisk"
 
-Write-Host "[INFO] Step 6: Compacting Windows system files..." -ForegroundColor Green
+Write-Host "[INFO] Step 7: Compacting Windows system files" -ForegroundColor Green
 compact.exe /CompactOS:always
 
-Write-Host "[INFO] Step 7: Removing user and system Temp files" -ForegroundColor Green
-recursively-Remove-Files-If-Possible -Path "$env:TEMP\*"
-recursively-Remove-Files-If-Possible -Path "${windowsDrive}\Windows\Temp\*"
+Write-Host "[INFO] Step 8: Removing user and system temp files" -ForegroundColor Green
+Recursively-Remove-Files-If-Possible -Path "$env:TEMP\*"
+Recursively-Remove-Files-If-Possible -Path "${windowsDrive}\Windows\Temp\*"
 
-Write-Host "[INFO] Step 8: Deleting Windows Update cache..." -ForegroundColor Green
+Write-Host "[INFO] Step 9: Deleting Windows update cache" -ForegroundColor Green
 Stop-Service wuauserv -Force
-recursively-Remove-Files-If-Possible -Path "${windowsDrive}\Windows\SoftwareDistribution\Download\*"
+Recursively-Remove-Files-If-Possible -Path "${windowsDrive}\Windows\SoftwareDistribution\Download\*"
 # not required, we poweroff and backup
 #Start-Service wuauserv
 
-Write-Host "[INFO] Step 9: Deleting Windows logs..." -ForegroundColor Green
-recursively-Remove-Files-If-Possible -Path "${windowsDrive}\Windows\Logs\*"
+Write-Host "[INFO] Step 10: Deleting Windows logs" -ForegroundColor Green
+Recursively-Remove-Files-If-Possible -Path "${windowsDrive}\Windows\Logs\*"
 
-Write-Host "[INFO] Step 10: Clear Windows Delivery Optimization Cache ${windowsDrive}\ProgramData\Microsoft\Windows\DeliveryOptimization" -ForegroundColor Green
-recursively-Remove-Files-If-Possible -Path "${windowsDrive}\ProgramData\Microsoft\Windows\DeliveryOptimization\*"
+Write-Host "[INFO] Step 11: Clear Windows delivery optimization cache ${windowsDrive}\ProgramData\Microsoft\Windows\DeliveryOptimization" -ForegroundColor Green
+Recursively-Remove-Files-If-Possible -Path "${windowsDrive}\ProgramData\Microsoft\Windows\DeliveryOptimization\*"
 
-Write-Host "[INFO] Step 11: Defragmenting the volume ${windowsDrive}" -ForegroundColor Green
-optimize-volume -DriveLetter ${windowsDrive}[0] -Defrag
+Write-Host "[INFO] Step 12: Defragmenting the volume ${windowsDrive}" -ForegroundColor Green
+optimize-volume -DriveLetter ${windowsDriveLetter} -Defrag
 
-Write-Host "[INFO] Step 12: Trimming the volume ${windowsDrive}" -ForegroundColor Green
-optimize-volume -DriveLetter ${windowsDrive}[0] -ReTrim
+Write-Host "[INFO] Step 13: Trimming the volume ${windowsDrive}" -ForegroundColor Green
+optimize-volume -DriveLetter ${windowsDriveLetter} -ReTrim
 Write-Host "[INFO] Optimization completed for ${windowsDrive}." -ForegroundColor Green
 
-Write-Host "[INFO] Step 13: Shrink Partition to Min Size + Buffer ${bufferSize} MB" -ForegroundColor Green
+Write-Host "[INFO] Step 14: Shrink partition to min size + buffer" -ForegroundColor Green
 ${partition} = Get-Partition -DriveLetter ${windowsDriveLetter}
 ${supportedSize} = ${partition} | Get-PartitionSupportedSize
 ${maxShrinkSize} = ${supportedSize}.SizeMin
@@ -57,19 +57,19 @@ Write-Host "[INFO] shrinkSize ${shrinkSize}" -ForegroundColor Green
 if (${maxShrinkSize} -gt 0) {
     Write-Host "[INFO] Shrinking partition to $(${shrinkSize} / 1MB) MB..." -ForegroundColor Green
     Resize-Partition -DriveLetter ${windowsDriveLetter} -Size ${shrinkSize}
-    Write-Host "[INFO] Partition shrink complete." -ForegroundColor Green
+    Write-Host "[INFO] Partition shrink complete" -ForegroundColor Green
 } else {
-    Write-Host "[WARNING] Not enough shrinkable space. Skipping shrink step." -ForegroundColor Yellow
+    Write-Host "[WARNING] Not enough shrinkable space - skipping shrink step" -ForegroundColor Yellow
 }
 
-Write-Host "[INFO] Step 14: Zero free space (use sdelete64 from Sysinternals)" -ForegroundColor Green
-Write-Host "[INFO] Zero free space of Windows volume ${windowsDrive}..." -ForegroundColor Green
+Write-Host "[INFO] Step 15: Zero free space (use sdelete64 from Sysinternals)" -ForegroundColor Green
+Write-Host "[INFO] Zero free space of Windows volume ${windowsDrive}" -ForegroundColor Green
 Start-Process -NoNewWindow -Wait -FilePath "${windowsDrive}\Program Files\winbackup\sdelete64.exe" -ArgumentList "-accepteula -q -z ${windowsDrive}"
-Write-Host "[INFO] Wrinting zeros completed for ${windowsDrive}." -ForegroundColor Green
+Write-Host "[INFO] Wrinting zeros completed for ${windowsDrive}" -ForegroundColor Green
 
-Write-Host "[INFO]  Step 15: Final TRIM" -ForegroundColor Green
-Write-Host "[INFO] Performing final TRIM operation..." -ForegroundColor Green
-optimize-volume -DriveLetter ${windowsDrive}[0] -ReTrim
-Write-Host "[INFO] Final TRIM completed successfully." -ForegroundColor Green
+Write-Host "[INFO]  Step 16: Final TRIM" -ForegroundColor Green
+Write-Host "[INFO] Performing final TRIM operation" -ForegroundColor Green
+optimize-volume -DriveLetter ${windowsDriveLetter} -ReTrim
+Write-Host "[INFO] Final TRIM completed successfully" -ForegroundColor Green
 
 Write-Host "Windows preparation complete! Poweroff and proceed with Linux backup ..."
