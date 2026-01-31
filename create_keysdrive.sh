@@ -3,7 +3,7 @@ MOUNTDIR="/winbackup/keys"
 
 echo
 echo "create mountdir"
-sudo mkfs.vfat -n KEYS -F16 -v "${DISK}"
+sudo mkfs.vfat -n KEYS -F32 -v "${DISK}"
 
 echo
 echo "mkdir"
