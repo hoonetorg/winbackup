@@ -1,5 +1,7 @@
 # Steps to prepare Windows installation for backup
+
 ## Running Install-Linux on machine with Windows installed
+
 Download sdelete with `get_sdelete.sh`
 
 Ensure you have the correct version of sdelete with
@@ -15,7 +17,9 @@ Run `windeploy.sh` in root of git repo in order to
 - Copy `winbackup*.ps1` and `sdelete64.exe` files to Windows disk `<windrive>:\Program Files\winbackup`
 
 ## on Windows host
+
 ### Steps for preparation of Windows backup
+
 Open powershell as Administrator!!!
 
 In Powershell do:
@@ -34,10 +38,26 @@ Open Powershell in Windows as Administrator!!! again and:
 
 Poweroff Windows
 
+### Optional: Remove activation for migrating Install to a new computer
+
+`slmgr /upk`
+
+`slmgr /cpky`
+
+check success with
+
+`slmgr /dli`
+
+restart test period if possible
+
+`slmgr /rearm`
+
 ... continue creating the backup on Linux
 
 # Steps after restore of Windows
+
 ## on Windows host
+
 ### Steps to revert backup preparations after restore
 
 we assume that scripts are already copied from preparation 
