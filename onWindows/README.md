@@ -58,6 +58,20 @@ restart test period if possible
 
 ## on Windows host
 
+### check the recovery partition by dis- and re-enabling  
+
+```
+reagentc /disable
+reagentc /enable
+reagentc /info
+```
+
+### probably you want to do a filesystem check on windrive
+
+`chkdsk <windrive>: /f`
+
+followed by a reboot
+
 ### Steps to revert backup preparations after restore
 
 we assume that scripts are already copied from preparation 
